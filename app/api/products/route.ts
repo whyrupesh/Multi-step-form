@@ -1,23 +1,23 @@
-// app/api/products/route.ts
+
 import { NextResponse } from "next/server";
 import { readDB, writeDB } from "@/lib/db";
 
-// GET all products
+
 export async function GET() {
   const products = readDB();
   return NextResponse.json(products);
 }
 
-// POST new product
+
 export async function POST(request: Request) {
   try {
-    // If you are sending FormData from the client:
+
     const formData = await request.formData();
     const name = formData.get("name") as string;
     const price = Number(formData.get("price"));
     const tax = Number(formData.get("tax"));
 
-    // Handle file upload
+    
     const imageFile = formData.get("image") as File | null;
     let imageBase64: string | null = null;
 
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       name,
       price,
       tax,
-      image: imageBase64, // store as base64 in JSON DB
+      image: imageBase64, 
     };
 
     const products = readDB();
@@ -43,6 +43,34 @@ export async function POST(request: Request) {
     console.error("POST /api/products error:", err);
     return NextResponse.json(
       { error: "Failed to save product" },
+      { status: 500 }
+    );
+  }
+}
+
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params;
+
+    let products = readDB();
+
+    const exists = products.some((p: any) => p.id === id);
+    if (!exists) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+
+    products = products.filter((p: any) => p.id !== id);
+    writeDB(products);
+
+    return NextResponse.json({ status: "ok", id });
+  } catch (err) {
+    console.error("DELETE /api/products/[id] error:", err);
+    return NextResponse.json(
+      { error: "Failed to delete product" },
       { status: 500 }
     );
   }
