@@ -1,11 +1,37 @@
 "use client";
 import useProductForm from "@/store/page";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 
 const StartForm = () => {
   const { step, setStep, product, updateProduct, reset } = useProductForm();
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
+
+  const mutation = useMutation({
+  mutationFn: async (data: any) => {
+    return await axios.post("/api/products", data); // <-- send JSON
+  },
+  onSuccess: () => {
+    reset();
+    alert("Product Saved");
+  },
+});
+
+
+  const handleSubmit = () =>{
+
+    const formdata = new FormData();
+    formdata.append("name", product.name);
+    formdata.append("price", String(product.price));
+    formdata.append("tax", String(product.tax));
+
+    if(product.image) formdata.append("image",product.image);
+
+    mutation.mutate(formdata);
+
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4">
@@ -140,10 +166,7 @@ const StartForm = () => {
                 ← Prev
               </button>
               <button
-                onClick={() => {
-                  alert("Form submitted!");
-                  reset();
-                }}
+                onClick={handleSubmit}
                 className="bg-green-500 text-white px-5 py-2 rounded-lg hover:bg-green-600"
               >
                 Submit ✔
