@@ -49,29 +49,4 @@ export async function POST(request: Request) {
 }
 
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const { id } = params;
 
-    let products = readDB();
-
-    const exists = products.some((p: any) => p.id === id);
-    if (!exists) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
-
-    products = products.filter((p: any) => p.id !== id);
-    writeDB(products);
-
-    return NextResponse.json({ status: "ok", id });
-  } catch (err) {
-    console.error("DELETE /api/products/[id] error:", err);
-    return NextResponse.json(
-      { error: "Failed to delete product" },
-      { status: 500 }
-    );
-  }
-}
